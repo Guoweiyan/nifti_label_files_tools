@@ -13,21 +13,31 @@ usage: translate_labels.py [-h] [--output_folder OUTPUT_FOLDER]
                            [--newer_labels NEWER_LABELS] [--reg REG]
                            mode input_folder
 
-positional arguments:
+**positional arguments:**
+
   mode                  Mode, can be 'read' or 'translate'
+  
   input_folder          The input folder containing label files
 
-optional arguments:
+**optional arguments:**
+
   -h, --help            show this help message and exit
+  
   --output_folder OUTPUT_FOLDER
+  
                         The output folder where the new label files will be
                         stored
+                        
   --original_labels ORIGINAL_LABELS
+  
                         The original labels list, f.e. [0, 1, 2, 3]
+                        
   --newer_labels NEWER_LABELS
+  
                         The newer labels list corresponding to original, f.e.
                         [0, 1, 1, 5] means to translate all aforementioned
                         label 2 to label 1 and label 3 to label 5
+                        
   --reg REG             Custom your label filename regex to catch the ID, it
                         can simplify the output in most of the time
                         
