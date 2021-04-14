@@ -4,7 +4,9 @@ This tools bundle is designed to help you process the nifti label files with mor
 ## label translate and read tool
 ### Description
 This tool is the script translate_labels.py. Using this tool, you can:
+
 1.(Read mode) Check the information of label files in the specific folder, including the labels containing in the label files, voxels/pixels count per label and corresponding percentage to the whole label image. Meanwhile it can find if there exists label files that do not contain all of the labels in the folder and find the missing labels. F.e., in BraTS2020 training dataset, we have 369 training cases with corresponding segmentation (label) files, while label 0, 1, 2, 4 represents different type of tissues/lesions. The dice loss that usually used for this dataset (as well as other medical dataset) will be unstable if there are few voxels for some labels in some cases, and there also exist a phenomenon that some labels even do not appear in some special cases . To get more information about this kind of dataset, you can try this tool in "read" mode.
+
 2.(Translate mode) Translate (replace) some specific labels in the label files by your customed ones. F.e., we have the label files containing labels 0, 1, 2, 4 in BraTS2020 dataset, but we need the labels to be continious sometimes, you can use this tool to translate label 4 -> label 3 to get your work easy. Or when we use the merged dice loss in model testing, which may compute the joint dice for (label 1 + label 2) , or (label 1 + label 3), this tool can also be helpful.
 
 ### Usage
