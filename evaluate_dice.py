@@ -13,6 +13,13 @@ from read_translate_labels import maybe_get_id_by_name
 # This tool is designed to calculate the dice of 2D/3D predicted results.
 # Hope to help with your works.
 
+
+# Merge rule's pattern is defined as follows:
+# ((merged labels), (merged labels), ...)
+# F.e. ((1, 2), (1, 2, 3), (1, 3)) means to separately calculate three merged dices,
+# they are : label 1, 2; label 1, 2, 3; label 1, 3
+
+
 # process the file list
 
 
@@ -73,8 +80,7 @@ def main():
                                             "regex must be the id, you must specify it", default="Training_([\d]+)")
     argparser.add_argument("--do_merge", action="store_true", help="Whether to do merged dice calculation, False by "
                                                                    "default.")
-    argparser.add_argument("--merge_rules", help="Custom your rule for calculating merged dice coefficient")
-    argparser.add_argument("--label_names", help="Specify the names for labels")
+    argparser.add_argument("--merge_rules", help="Custom your rules for calculating merged dice coefficient")
     args = argparser.parse_args()
     args_check(args)
     gt_reg = re.compile(args.gt_reg)
