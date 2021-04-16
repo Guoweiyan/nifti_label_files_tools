@@ -20,7 +20,7 @@ def maybe_get_id_by_name(name: str, reg):
         return "filename " + name
 
 
-def read_label(filelist_with_path:list, input_folder, reg_str):
+def read_labels(filelist_with_path:list, input_folder, reg_str):
     # TODO the label-lost checking do not work for the first label file, remain to fix
     labels_set = set()
     labels_info = collections.OrderedDict()
@@ -146,7 +146,7 @@ def main():
         # read mode
         # To read the label files in the specific folder and analyze some attributes of them.
         # Meanwhile, it can find if there are label files that do not containing all the labels
-        labels_set, labels_info, labels_lost_list = read_label(filelist_with_path, args.input_folder, args.reg)
+        labels_set, labels_info, labels_lost_list = read_labels(filelist_with_path, args.input_folder, args.reg)
         print(f"The label files contains the following labels:\n {labels_set}")
         if len(labels_lost_list):
             print(f"Please note that {len(labels_lost_list)} files do not have all of the labels, they are:")
