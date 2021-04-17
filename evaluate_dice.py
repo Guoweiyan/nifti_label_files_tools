@@ -9,15 +9,15 @@ import tabulate
 from read_translate_labels import read_labels
 from read_translate_labels import maybe_get_id_by_name
 
-
 # This tool is designed to calculate the dice of 2D/3D predicted results.
 # Hope to help with your works.
 
 
 # Merge rule's pattern is defined as follows:
-# ((merged labels), (merged labels), ...)
-# F.e. ((1, 2), (1, 2, 3), (1, 3)) means to separately calculate three merged dices,
-# they are : label 1, 2; label 1, 2, 3; label 1, 3
+# ((merged labels) -> output label, (merged labels) -> output label, ...)
+# F.e. ((1, 2) -> 1; (1, 2, 3) -> 2; (3) ->3) means to separately calculate three merged dices,
+# they are : label 1, 2; label 1, 2, 3; label 3, and the corresponding output labels are 1, 2, 3
+MERGE_REG_STR = "\(([\d\,]+)\)->([\d]+)"  # use this regex to match the merge rules
 
 
 # process the file list
@@ -25,32 +25,64 @@ from read_translate_labels import maybe_get_id_by_name
 
 def evaluate_file_list(pre_file_list_with_path: list, pre_id_list: list, gt_file_list_with_path: list, gt_id_list: list,
                        label_list: list, do_merge=False,
-                       merge_rules=None):
+                       merge_rules_str=None):
     dice_list = []
-    for index in range(len(pre_id_list)):
-        index_for_gt = gt_id_list.index(pre_id_list[index])
-        pre_img = sitk.GetArrayFromImage(sitk.ReadImage(pre_file_list_with_path[index]))
-        gt_img = sitk.GetArrayFromImage(sitk.ReadImage(gt_file_list_with_path[index_for_gt]))
-        dice = calculate_dice(pre_img, gt_img, do_merge=do_merge,
-                              merge_rules=merge_rules, label_list=label_list)
-        dice_list.append(dice)
-
-    dice_mean, dice_std = np.mean(dice_list, axis=0), np.std(dice_list, axis=0)
-    # print(dice_list)
-    # Now, the dice_mean and dice_std is the array with shape n * 1, n is the number of cases
-    return dice_mean, dice_std, dice_list
+    if not do_merge:
+        for index in range(len(pre_id_list)):
+            index_for_gt = gt_id_list.index(pre_id_list[index])
+            pre_img = sitk.GetArrayFromImage(sitk.ReadImage(pre_file_list_with_path[index]))
+            gt_img = sitk.GetArrayFromImage(sitk.ReadImage(gt_file_list_with_path[index_for_gt]))
+            dice = calculate_dice(pre_img, gt_img, do_merge=False,
+                                  label_list=label_list)
+            dice_list.append(dice)
+        dice_mean, dice_std = np.mean(dice_list, axis=0), np.std(dice_list, axis=0)
+        # print(dice_list)
+        # Now, the dice_mean and dice_std is the array with shape n * 1, n is the number of cases
+        return dice_mean, dice_std, dice_list, label_list
+    else:
+        rules_reg = re.compile(MERGE_REG_STR)
+        merge_rules_str = merge_rules_str.replace(" ", "").split(";")
+        rules = []
+        for rule_str in merge_rules_str:
+            [merged_labels_str, new_label_str] = rules_reg.search(rule_str).groups("1,2")
+            merged_labels = list(map(int, merged_labels_str.split(",")))
+            new_label = int(new_label_str)
+            rules.append([merged_labels, new_label])
+        assert len(rules) > 0, "You set the do_merge flag but I can't recognize any merge rules in your input"
+        for index in range(len(pre_id_list)):
+            index_for_gt = gt_id_list.index(pre_id_list[index])
+            pre_img = sitk.GetArrayFromImage(sitk.ReadImage(pre_file_list_with_path[index]))
+            gt_img = sitk.GetArrayFromImage(sitk.ReadImage(gt_file_list_with_path[index_for_gt]))
+            dice = calculate_dice(pre_img, gt_img, label_list, do_merge=True, merge_rules=rules)
+            dice_list.append(dice)
+        dice_mean, dice_std = np.mean(dice_list, axis=0), np.std(dice_list, axis=0)
+        new_label_list = [new_label for [_, new_label] in rules]
+        return dice_mean, dice_std, dice_list, new_label_list
 
 
 # calculate the dice coefficient for single pair of pre-gt images
 
 
-def calculate_dice(pre: np.ndarray, gt: np.ndarray, label_list: list, do_merge: bool, merge_rules):
-    dice = np.empty([len(label_list), 1])
-    for index in range(len(label_list)):
-        dice[index] = np.sum(pre[gt == label_list[index]] == label_list[index]) * 2.0 / (
+def calculate_dice(pre: np.ndarray, gt: np.ndarray, label_list: list, do_merge: bool, merge_rules=None):
+    if not do_merge:
+        dice = np.empty([len(label_list), 1])
+        for index in range(len(label_list)):
+            dice[index] = np.sum(pre[gt == label_list[index]] == label_list[index]) * 2.0 / (
                     np.sum(pre == label_list[index])
                     + np.sum(gt == label_list[index]))
-    return dice
+        return dice
+    else:
+        assert merge_rules is not None
+        dice = np.empty([len(merge_rules), 1])
+        for index in range(len(merge_rules)):
+            [merged_label_list, new_label] = merge_rules[index]
+            pre_tmp = np.zeros(pre.shape)
+            gt_tmp = np.zeros(gt.shape)
+            for label in merged_label_list:
+                pre_tmp[pre == label] = new_label
+                gt_tmp[gt == label] = new_label
+            dice[index] = calculate_dice(pre_tmp, gt_tmp, [new_label, ], do_merge=False)
+        return dice
 
 
 def extract_file_list(folder: str, reg):
@@ -80,7 +112,14 @@ def main():
                                             "regex must be the id, you must specify it", default="Training_([\d]+)")
     argparser.add_argument("--do_merge", action="store_true", help="Whether to do merged dice calculation, False by "
                                                                    "default.")
-    argparser.add_argument("--merge_rules", help="Custom your rules for calculating merged dice coefficient")
+    argparser.add_argument("--merge_rules", help="Custom your rules for calculating merged dice coefficient, "
+                                                 "Merge rule's pattern is defined as follows: "
+                                                 "((merged labels) -> output label, "
+                                                 "(merged labels) -> output label, ...)"
+                                                 "F.e. ((1, 2) -> 1; (1, 2, 3) -> 2; (3) ->3) means to separately "
+                                                 "calculate three merged dices,"
+                                                 "they are : label 1, 2; label 1, 2, 3; label 3, and the corresponding "
+                                                 "output labels are 1, 2, 3")
     args = argparser.parse_args()
     args_check(args)
     gt_reg = re.compile(args.gt_reg)
@@ -104,8 +143,11 @@ def main():
     print(labels_list)
 
     # Todo: Call the calculate function
-    dice_mean, dice_std, dice_list = evaluate_file_list(pre_file_list_with_path, pre_id_list, gt_file_list_with_path,
-                                                        gt_id_list, labels_list)
+    dice_mean, dice_std, dice_list, dice_labels_list = evaluate_file_list(pre_file_list_with_path, pre_id_list,
+                                                                          gt_file_list_with_path,
+                                                                          gt_id_list, labels_list,
+                                                                          do_merge=args.do_merge,
+                                                                          merge_rules_str=args.merge_rules)
     print("The dice mean is :")
     print(dice_mean)
 
