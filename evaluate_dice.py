@@ -4,7 +4,7 @@ import collections
 import argparse
 import os
 import re
-import tabulate
+from tabulate import tabulate
 
 from read_translate_labels import read_labels
 from read_translate_labels import maybe_get_id_by_name
@@ -34,8 +34,8 @@ def evaluate_file_list(pre_file_list_with_path: list, pre_id_list: list, gt_file
             gt_img = sitk.GetArrayFromImage(sitk.ReadImage(gt_file_list_with_path[index_for_gt]))
             dice = calculate_dice(pre_img, gt_img, do_merge=False,
                                   label_list=label_list)
-            dice_list.append(dice)
-        dice_mean, dice_std = np.mean(dice_list, axis=0), np.std(dice_list, axis=0)
+            dice_list.append(dice.flatten().tolist())
+        dice_mean, dice_std = np.mean(dice_list, axis=0).flatten().tolist(), np.std(dice_list, axis=0).flatten().tolist()
         # print(dice_list)
         # Now, the dice_mean and dice_std is the array with shape n * 1, n is the number of cases
         return dice_mean, dice_std, dice_list, label_list
@@ -54,14 +54,14 @@ def evaluate_file_list(pre_file_list_with_path: list, pre_id_list: list, gt_file
             pre_img = sitk.GetArrayFromImage(sitk.ReadImage(pre_file_list_with_path[index]))
             gt_img = sitk.GetArrayFromImage(sitk.ReadImage(gt_file_list_with_path[index_for_gt]))
             dice = calculate_dice(pre_img, gt_img, label_list, do_merge=True, merge_rules=rules)
-            dice_list.append(dice)
-        dice_mean, dice_std = np.mean(dice_list, axis=0), np.std(dice_list, axis=0)
+            dice_list.append(dice.flatten().tolist())
+        dice_mean, dice_std = np.mean(dice_list, axis=0).flatten().tolist(), np.std(dice_list, axis=0).flatten().tolist()
         new_label_list = [new_label for [_, new_label] in rules]
         return dice_mean, dice_std, dice_list, new_label_list
 
 
 # calculate the dice coefficient for single pair of pre-gt images
-
+# Note: this function will return an numpy.ndarray, not a list. You may need to flatten it and make list from it
 
 def calculate_dice(pre: np.ndarray, gt: np.ndarray, label_list: list, do_merge: bool, merge_rules=None):
     if not do_merge:
@@ -148,8 +148,15 @@ def main():
                                                                           gt_id_list, labels_list,
                                                                           do_merge=args.do_merge,
                                                                           merge_rules_str=args.merge_rules)
+    table = []
+    for index in range(len(pre_id_list)):
+        table.append([pre_id_list[index]] + (dice_list[index]))
+    table.append(["Mean"] + dice_mean)
+    table = tabulate(table, headers=["ID"] + dice_labels_list, tablefmt="grid")
+    print(table)
     print("The dice mean is :")
     print(dice_mean)
+    # print(dice_list)
 
 
 if __name__ == "__main__":
