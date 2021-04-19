@@ -161,7 +161,10 @@ def main():
     table.append(["Mean"] + dice_mean)
     table = tabulate(table, headers=["ID"] + dice_labels_list, tablefmt="grid")
     print(table)
-    with open(os.path.join(args.pre_folder, "dice_info.txt"), "w") as f:
+    output_file_name = "dice_info.txt"
+    if args.do_merge:
+        output_file_name = "merged_dice_info.txt"
+    with open(os.path.join(args.pre_folder, output_file_name), "w") as f:
         if args.do_merge:
             print("Merge Rules:", file=f)
             print(args.merge_rules, file=f)
