@@ -67,9 +67,16 @@ def calculate_dice(pre: np.ndarray, gt: np.ndarray, label_list: list, do_merge: 
     if not do_merge:
         dice = np.empty([len(label_list), 1])
         for index in range(len(label_list)):
-            dice[index] = np.sum(pre[gt == label_list[index]] == label_list[index]) * 2.0 / (
-                    np.sum(pre == label_list[index])
-                    + np.sum(gt == label_list[index]))
+            # In the case of some labels not existing in this case
+            if not (gt == label_list[index]).any():
+                if (pre == label_list[index]).any():
+                    dice[index] = 0
+                else:
+                    dice[index] = 1
+            else:
+                dice[index] = np.sum(pre[gt == label_list[index]] == label_list[index]) * 2.0 / (
+                        np.sum(pre == label_list[index])
+                        + np.sum(gt == label_list[index]))
         return dice
     else:
         assert merge_rules is not None
