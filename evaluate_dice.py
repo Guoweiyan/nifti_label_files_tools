@@ -14,8 +14,8 @@ from read_translate_labels import maybe_get_id_by_name
 
 
 # Merge rule's pattern is defined as follows:
-# ((merged labels) -> output label, (merged labels) -> output label, ...)
-# F.e. ((1, 2) -> 1; (1, 2, 3) -> 2; (3) ->3) means to separately calculate three merged dices,
+# (merged labels) -> output label; (merged labels) -> output label; ...
+# F.e. (1, 2) -> 1; (1, 2, 3) -> 2; (3) ->3 means to separately calculate three merged dices,
 # they are : label 1, 2; label 1, 2, 3; label 3, and the corresponding output labels are 1, 2, 3
 MERGE_REG_STR = "\(([\d\,]+)\)->([\d]+)"  # use this regex to match the merge rules
 
@@ -121,9 +121,9 @@ def main():
                                                                    "default.")
     argparser.add_argument("--merge_rules", help="Custom your rules for calculating merged dice coefficient, "
                                                  "Merge rule's pattern is defined as follows: "
-                                                 "((merged labels) -> output label, "
-                                                 "(merged labels) -> output label, ...)"
-                                                 "F.e. ((1, 2) -> 1; (1, 2, 3) -> 2; (3) ->3) means to separately "
+                                                 "(merged labels) -> output label; "
+                                                 "(merged labels) -> output label; ..."
+                                                 "F.e. (1, 2) -> 1; (1, 2, 3) -> 2; (3) ->3 means to separately "
                                                  "calculate three merged dices,"
                                                  "they are : label 1, 2; label 1, 2, 3; label 3, and the corresponding "
                                                  "output labels are 1, 2, 3")
