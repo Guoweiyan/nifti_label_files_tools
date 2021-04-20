@@ -142,6 +142,7 @@ def main():
     print(f"There's totally {len(pre_id_list)} prediction results and {len(gt_id_list)} ground truth annotations")
 
     #
+    print("Checking labels in the pre and gt folders:")
     pre_labels_set, _, _ = read_labels(pre_file_list_with_path, args.pre_folder, args.pre_reg)
     gt_labels_set, _, _ = read_labels(gt_file_list_with_path, args.gt_folder, args.gt_reg)
     assert pre_labels_set == gt_labels_set, "The labels in the prediction folder do not match labels in the ground " \
@@ -149,6 +150,7 @@ def main():
     labels_list = list(pre_labels_set)
     print(labels_list)
 
+    print("Calculating dice:")
     # Todo: Call the calculate function
     dice_mean, dice_std, dice_list, dice_labels_list = evaluate_file_list(pre_file_list_with_path, pre_id_list,
                                                                           gt_file_list_with_path,
