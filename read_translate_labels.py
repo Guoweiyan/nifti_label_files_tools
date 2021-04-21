@@ -1,3 +1,4 @@
+#! python
 # This file is created by Weiyan Guo Ari 2020. Hope to help you with your work
 # There can be lots of bugs in it, please feel free to mail me: github@weiyanguo.cn
 #
