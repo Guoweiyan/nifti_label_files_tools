@@ -1,4 +1,4 @@
-#! python
+#! /usr/bin/env python
 import SimpleITK as sitk
 import numpy as np
 import collections
