@@ -22,7 +22,7 @@ def main():
     arg_parser.add_argument("to_folder", help="Copy the chosen data to here")
     arg_parser.add_argument("n", help="Choose how many items")
     arg_parser.add_argument("reg", help="The regex to find your items in the folder")
-    arg_parser.add_argument("--except_reg", help="The regex to match the item you don't want to choose")
+    arg_parser.add_argument("--ignore_reg", help="The regex to match the item you don't want to choose")
 
     args = arg_parser.parse_args()
     args = args_check(args)
@@ -47,6 +47,7 @@ def main():
 
     print(f"finished copying {args.n} items")
     return
+
 
 if __name__ == "__main__":
     main()
