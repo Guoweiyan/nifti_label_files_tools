@@ -18,6 +18,7 @@ def main():
     subfolder_list = [i for i in os.listdir(args.original_folder) if reg.search(i) and os.path.isdir(i)]
     postfix = ["_0000.nii.gz", "_0002.nii.gz", "_0003.nii.gz", "_0004.nii.gz"]
     original_postfix = ["_t1.nii.gz", "_t1ce.nii.gz", "_t2.nii.gz", "_flair.nii.gz"]
+    print(f"Totally {len(subfolder_list)} cases")
     for folder in subfolder_list:
         path = os.path.join(args.original_folder, folder)
         for i in range(4):
