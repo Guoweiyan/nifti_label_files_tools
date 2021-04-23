@@ -23,7 +23,7 @@ def main():
         path = os.path.join(args.original_folder, folder)
         for i in range(4):
             assert os.path.isfile(os.path.join(path, folder+original_postfix[i]))
-            shutil.copy(os.path.join(path+original_postfix[i]), os.path.join(args.to_folder, folder+postfix[i]))
+            shutil.copy(os.path.join(path, folder+original_postfix[i]), os.path.join(args.to_folder, folder+postfix[i]))
         print(f"{folder} processed")
 
 
