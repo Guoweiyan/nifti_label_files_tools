@@ -12,7 +12,10 @@ def args_check(args):
         os.mkdir(args.to_folder)
     args.n = int(args.n)
     assert args.n > 0, "n must greater than zero! "
-
+    if args.copy_others_to:
+        if not os.path.isdir(args.copy_others_to):
+            print("The copy others path is not existed, we will create it")
+            os.mkdir(args.copy_others_to)
     return args
 
 
@@ -23,6 +26,7 @@ def main():
     arg_parser.add_argument("n", help="Choose how many items")
     arg_parser.add_argument("reg", help="The regex to find your items in the folder")
     arg_parser.add_argument("--ignore_reg", help="The regex to match the item you don't want to choose")
+    arg_parser.add_argument("--copy_others_to", help="Your folder to contain the data that not be chosen")
 
     args = arg_parser.parse_args()
     args = args_check(args)
@@ -36,6 +40,7 @@ def main():
     rng = np.random.default_rng()
     chosen_file_list = list(rng.choice(file_list, size=args.n, replace=False))
 
+
     for item in chosen_file_list:
         ab_path = os.path.join(args.from_folder, item)
         if os.path.isdir(ab_path):
@@ -45,7 +50,20 @@ def main():
         else:
             print(f"Warning, the file or folder {ab_path} not existing")
 
-    print(f"finished copying {args.n} items")
+    if args.copy_others_to:
+        others_file_list = [file for file in file_list if file not in chosen_file_list]
+        for item in others_file_list:
+            ab_path = os.path.join(args.from_folder, item)
+            if os.path.isdir(ab_path):
+                shutil.copytree(ab_path, os.path.join(args.copy_others_to, item))
+            elif os.path.isfile(ab_path):
+                shutil.copy(ab_path, os.path.join(args.copy_others_to, item))
+            else:
+                print(f"Warning, the file or folder {ab_path} not existing")
+
+
+
+    print(f"finished copying {args.n} items to your folder")
     return
 
 
