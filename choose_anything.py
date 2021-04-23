@@ -61,8 +61,6 @@ def main():
             else:
                 print(f"Warning, the file or folder {ab_path} not existing")
 
-
-
     print(f"finished copying {args.n} items to your folder")
     return
 
