@@ -4,6 +4,9 @@ import shutil
 import re
 from argparse import ArgumentParser
 
+# this tool is thought to be useful when you choose some cases from your whole dataset and copy them to the desired
+# training folder but forget to process other cases to the test folder.
+
 
 def main():
     args_parser = ArgumentParser()

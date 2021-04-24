@@ -4,6 +4,7 @@ import re
 import shutil
 from argparse import ArgumentParser
 
+# this tool is to convert the BraTS cases to the specific organization pattern for nnU-Net
 
 def main():
     args_parser = ArgumentParser()
