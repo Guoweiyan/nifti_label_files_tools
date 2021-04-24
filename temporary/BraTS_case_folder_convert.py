@@ -5,7 +5,6 @@ import shutil
 from argparse import ArgumentParser
 
 
-
 def main():
     args_parser = ArgumentParser()
     args_parser.add_argument("original_folder")
@@ -16,7 +15,7 @@ def main():
         os.mkdir(args.to_folder)
     reg = re.compile("Training")
     subfolder_list = [i for i in os.listdir(args.original_folder) if reg.search(i) and os.path.isdir(os.path.join(args.original_folder, i))]
-    postfix = ["_0000.nii.gz", "_0002.nii.gz", "_0003.nii.gz", "_0004.nii.gz"]
+    postfix = ["_0000.nii.gz", "_0001.nii.gz", "_0002.nii.gz", "_0003.nii.gz"]
     original_postfix = ["_t1.nii.gz", "_t1ce.nii.gz", "_t2.nii.gz", "_flair.nii.gz"]
     print(f"Totally {len(subfolder_list)} cases")
     for folder in subfolder_list:
